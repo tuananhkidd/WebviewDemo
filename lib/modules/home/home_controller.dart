@@ -22,6 +22,13 @@ class HomeController extends GetxController {
   /// Reactive WebView loading progress (0–100). Drives the progress bar.
   final RxInt progress = 0.obs;
 
+  /// Reactive state to track if the app is allowed to exit.
+  final RxBool canExit = false.obs;
+
+  /// Reactive states for WebView navigation (back/forward).
+  final RxBool canGoBack = false.obs;
+  final RxBool canGoForward = false.obs;
+
   @override
   void onInit() {
     super.onInit();
@@ -36,10 +43,38 @@ class HomeController extends GetxController {
       ..setNavigationDelegate(
         NavigationDelegate(
           onProgress: (value) => progress.value = value,
-          onPageFinished: (_) => progress.value = 100,
+          onPageFinished: (_) async {
+            progress.value = 100;
+            await updateNavigationState();
+          },
+          onUrlChange: (_) async {
+            await updateNavigationState();
+          },
         ),
       )
       ..loadRequest(Uri.parse(ApiEndpoints.companyWebsite));
+  }
+
+  /// Updates the reactive navigation states.
+  Future<void> updateNavigationState() async {
+    canGoBack.value = await webViewController.canGoBack();
+    canGoForward.value = await webViewController.canGoForward();
+  }
+
+  /// Goes back in WebView history if possible.
+  Future<void> goBack() async {
+    if (await webViewController.canGoBack()) {
+      await webViewController.goBack();
+      await updateNavigationState();
+    }
+  }
+
+  /// Goes forward in WebView history if possible.
+  Future<void> goForward() async {
+    if (await webViewController.canGoForward()) {
+      await webViewController.goForward();
+      await updateNavigationState();
+    }
   }
 
   /// Calls the common REST function (`/todos/1`). On success, forwards the
