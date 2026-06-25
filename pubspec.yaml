@@ -21,6 +21,9 @@ dependencies:
 
   cupertino_icons: ^1.0.8
 
+  # Environment configuration loader (.env files).
+  flutter_dotenv: ^5.2.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -28,3 +31,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - .env.develop
+    - .env.staging
+    - .env.release
